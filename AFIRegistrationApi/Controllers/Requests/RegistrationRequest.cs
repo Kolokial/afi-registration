@@ -1,0 +1,33 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace AFIRegistration.Requests;
+
+public class RegistrationRequest : IValidatableObject
+{
+    [StringLength(50, MinimumLength = 3)]
+    [Required]
+    public required string FirstName { get; set; }
+
+    [StringLength(50, MinimumLength = 3)]
+    [Required]
+    public required string LastName { get; set; }
+
+    [RegularExpression(@"^[A-Z]{2}-[0-9]{6}$")]
+    [StringLength(9)]
+    [Required]
+    public required string PolicyNumber { get; set; }
+
+    public DateTime? DateOfBirth { get; set; }
+
+    [EmailAddress]
+    public string? Email { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (DateOfBirth == null && Email == null)
+        {
+            yield return new ValidationResult("Either Date of Birth or Email must be provided.",
+                [nameof(DateOfBirth), nameof(Email)]);
+        }
+    }
+}
