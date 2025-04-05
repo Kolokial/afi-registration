@@ -1,7 +1,10 @@
 
 using AFIRegistration.Models;
 using AFIRegistration.Requests;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 [ApiController]
 [Route("customer")]
@@ -9,15 +12,26 @@ public class CustomerController : ControllerBase
 {
     private readonly ILogger<CustomerController> _logger;
     private readonly RegistrationDbContext _registrationDb;
-    public CustomerController(ILogger<CustomerController> logger, RegistrationDbContext registrationDb)
+    private IValidator<RegistrationRequest> _validator;
+
+    public CustomerController(ILogger<CustomerController> logger, RegistrationDbContext registrationDb, IValidator<RegistrationRequest> validator)
     {
         _logger = logger;
         _registrationDb = registrationDb;
+        _validator = validator;
     }
 
     [HttpPost]
     public async Task<IResult> Post([FromBody] RegistrationRequest user)
     {
+
+        ValidationResult validationResult = await _validator.ValidateAsync(user);
+
+        if (!validationResult.IsValid)
+        {
+            return Results.ValidationProblem(validationResult.ToDictionary());
+        }
+
         var record = new Customer()
         {
             FirstName = user.FirstName,
@@ -35,11 +49,12 @@ public class CustomerController : ControllerBase
 
         if (user.DateOfBirth != null)
         {
-            var dto = new DateTimeOffset(user.DateOfBirth.Value);
-            record.DOB = new CustomerDOB() { DateOfBirth = user.DateOfBirth.Value };
+            record.DOB = new CustomerDOB()
+            {
+                DateOfBirth = DateTime.Parse(user.DateOfBirth)
+            };
         }
         var result = _registrationDb.Customer.Add(record);
-
 
         await _registrationDb.SaveChangesAsync();
         return Results.Created($"/customer/{result.Entity.Id}", result.Entity.Id);
@@ -48,6 +63,6 @@ public class CustomerController : ControllerBase
     [HttpGet]
     public async Task<OkObjectResult> Get()
     {
-        return Ok(_registrationDb.Customer);
+        return Ok(_registrationDb.Customer.Include(x => x.DOB).Include(x => x.Email));
     }
 }
