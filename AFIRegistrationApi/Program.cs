@@ -15,7 +15,6 @@ builder.Services.AddOpenApiDocument(config =>
     config.Version = "v1";
 });
 
-
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

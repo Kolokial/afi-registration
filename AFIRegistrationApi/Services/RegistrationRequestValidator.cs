@@ -1,14 +1,16 @@
 using AFIRegistration.Requests;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 
 public class RegistrationRequestValidator : AbstractValidator<RegistrationRequest>
 {
     public RegistrationRequestValidator()
     {
         RuleFor(user => user.DateOfBirth)
-            .Must(dob => BeAValidDate(dob))
-                .WithMessage("Date format must be YYYY-MM-DD")
-            .Must(dob => DateTime.UtcNow.AddYears(-18) > DateTime.Parse(dob))
+            .Cascade(CascadeMode.Stop)
+            .Must(BeAValidDate)
+                .WithMessage("Date format must be YYYY-MM-DD. Check month and day are in correct order.")
+            .Must(BeOver18)
                 .WithMessage("You must be over the age of 18 to register.");
 
         RuleFor(user => user.Email)
@@ -18,9 +20,14 @@ public class RegistrationRequestValidator : AbstractValidator<RegistrationReques
                 .WithMessage("The local part of your email address must be 4 or more characters long.");
     }
 
-    private bool BeAValidDate(string value)
+    private bool BeAValidDate(string dob)
     {
         DateTime date;
-        return DateTime.TryParse(value, out date);
+        return DateTime.TryParse(dob, out date);
+    }
+
+    private bool BeOver18(string dob)
+    {
+        return DateTime.UtcNow.AddYears(-18) > DateTime.Parse(dob);
     }
 }

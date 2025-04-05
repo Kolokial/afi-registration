@@ -17,9 +17,8 @@ public class RegistrationRequest : IValidatableObject
     [Required]
     public required string PolicyNumber { get; set; }
 
-    [RegularExpression(@"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")]
+    [RegularExpression(@"^(19|20)[0-9]{2}-(0|1)[0-9]{1}-(0|1|2|3)[0-9]{1}$"),]
     [StringLength(10)]
-
     public string? DateOfBirth { get; set; }
 
     [EmailAddress]
