@@ -11,7 +11,7 @@ public class CustomerControllerTests
     private void SetUp()
     {
         var options = new DbContextOptionsBuilder<RegistrationDbContext>()
-            .UseInMemoryDatabase(databaseName: "TestRegistrationDb" + DateTime.Now.ToString())
+            .UseInMemoryDatabase(databaseName: "TestRegistrationDb" + DateTime.Now.Ticks)
             .Options;
         var validator = new RegistrationRequestValidator();
         var mockDb = new RegistrationDbContext(options);
@@ -39,7 +39,6 @@ public class CustomerControllerTests
         Assert.IsType<Created<int>>(result);
         Assert.Equal(201, (result as Created<int>).StatusCode);
         Assert.Equal(1, (result as Created<int>).Value);
-
     }
 
     [Fact]
@@ -62,7 +61,6 @@ public class CustomerControllerTests
         Assert.IsType<Created<int>>(result);
         Assert.Equal(201, (result as Created<int>).StatusCode);
         Assert.Equal(1, (result as Created<int>).Value);
-
     }
 
     [Fact]
