@@ -1,11 +1,7 @@
-﻿using System.Net;
-using AFIRegistration.Requests;
+﻿using AFIRegistration.Requests;
 using AFIRegistration.Validation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using Moq;
-using Xunit.Sdk;
 
 namespace AFIRegistrationAPITests;
 
@@ -15,7 +11,7 @@ public class CustomerControllerTests
     private void SetUp()
     {
         var options = new DbContextOptionsBuilder<RegistrationDbContext>()
-            .UseInMemoryDatabase(databaseName: "TestRegistrationDb")
+            .UseInMemoryDatabase(databaseName: "TestRegistrationDb" + DateTime.Now.ToString())
             .Options;
         var validator = new RegistrationRequestValidator();
         var mockDb = new RegistrationDbContext(options);
@@ -23,7 +19,7 @@ public class CustomerControllerTests
     }
 
     [Fact]
-    public async Task CustomerController_SendCorrectData_RecieveRecordId()
+    public async Task CustomerController_SendCorrectDataWithDOB_Recieve201()
     {
 
         // Arrange
@@ -40,7 +36,98 @@ public class CustomerControllerTests
         var result = await _controller.Post(user);
 
         // Assert
-        Assert.True(true);
-        Assert.IsType<Created>(result);
+        Assert.IsType<Created<int>>(result);
+        Assert.Equal(201, (result as Created<int>).StatusCode);
+        Assert.Equal(1, (result as Created<int>).Value);
+
+    }
+
+    [Fact]
+    public async Task CustomerController_SendCorrectDataWithEmail_201()
+    {
+        // Arrange
+        SetUp();
+        var user = new RegistrationRequest()
+        {
+            FirstName = "Garfield",
+            LastName = "Look",
+            PolicyNumber = "XX-090909",
+            Email = "gary@me.com"
+        };
+
+        // Act
+        var result = await _controller.Post(user);
+
+        // Assert
+        Assert.IsType<Created<int>>(result);
+        Assert.Equal(201, (result as Created<int>).StatusCode);
+        Assert.Equal(1, (result as Created<int>).Value);
+
+    }
+
+    [Fact]
+    public async Task CustomerController_FirstNameTooShort_Recieve400()
+    {
+
+        // Arrange
+        SetUp();
+        var user = new RegistrationRequest()
+        {
+            FirstName = "G",
+            LastName = "Look",
+            PolicyNumber = "XX-090909",
+            Email = "gary@me.com"
+        };
+
+        // Act
+        var result = await _controller.Post(user);
+
+        // Assert
+        Assert.IsType<ProblemHttpResult>(result);
+        Assert.Equal(400, (result as ProblemHttpResult).StatusCode);
+    }
+
+    [Fact]
+    public async Task CustomerController_LastNameTooShort_Recieve400()
+    {
+
+        // Arrange
+        SetUp();
+        var user = new RegistrationRequest()
+        {
+            FirstName = "Gary",
+            LastName = "L",
+            PolicyNumber = "XX-090909",
+            Email = "gary@me.com"
+        };
+
+        // Act
+        var result = await _controller.Post(user);
+
+        // Assert
+        Assert.IsType<ProblemHttpResult>(result);
+        Assert.Equal(400, (result as ProblemHttpResult).StatusCode);
+    }
+
+    [Fact]
+    public async Task CustomerController_PolicyNumberTooShort_Recieve400()
+    {
+
+        // Arrange
+        SetUp();
+        var user = new RegistrationRequest()
+        {
+            FirstName = "Gary",
+            LastName = "L",
+            PolicyNumber = "XX-09099",
+            Email = "gary@me.com"
+        };
+
+        // Act
+        var result = await _controller.Post(user);
+
+        // Assert
+        Assert.IsType<ProblemHttpResult>(result);
+        Assert.Equal(400, (result as ProblemHttpResult).StatusCode);
     }
 }
