@@ -10,13 +10,11 @@ using Microsoft.EntityFrameworkCore;
 [Route("customer")]
 public class CustomerController : ControllerBase
 {
-    private readonly ILogger<CustomerController> _logger;
     private readonly RegistrationDbContext _registrationDb;
     private IValidator<RegistrationRequest> _validator;
 
-    public CustomerController(ILogger<CustomerController> logger, RegistrationDbContext registrationDb, IValidator<RegistrationRequest> validator)
+    public CustomerController(RegistrationDbContext registrationDb, IValidator<RegistrationRequest> validator)
     {
-        _logger = logger;
         _registrationDb = registrationDb;
         _validator = validator;
     }

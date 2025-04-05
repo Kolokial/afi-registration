@@ -1,10 +1,11 @@
 using AFIRegistration.Requests;
+using AFIRegistration.Validation;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddDbContext<RegistrationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("RegistrationsContextSQLite"))); builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddDbContext<RegistrationDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("RegistrationsContextSQLite")));
+builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddControllers();
 builder.Services.AddScoped<IValidator<RegistrationRequest>, RegistrationRequestValidator>();
 builder.Services.AddEndpointsApiExplorer();
